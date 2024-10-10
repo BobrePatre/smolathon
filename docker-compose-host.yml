@@ -97,9 +97,12 @@ services:
       PROXY_ADDRESS_FORWARDING: true
     labels:
       - "traefik.http.routers.auth.rule=Host(`auth.my-creative.my-vm.work`)"  # Replace with your domain
+      - "traefik.http.routers.auth.service=auth"
       - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.service=auth"
       - "traefik.http.routers.auth.tls.certresolver=myresolver"
       - "traefik.http.services.auth.loadbalancer.server.port=8080"
+
     restart: unless-stopped
     command:
       - start-dev
