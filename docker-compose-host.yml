@@ -2,6 +2,28 @@ version: "3.8"
 name: "smolaton"
 
 services:
+  traefik:
+    image: traefik:v2.9
+    container_name: traefik
+    command:
+      - "--api.insecure=true"  # You can disable this in production
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=georgiy.gus@yandex.ru"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"     # HTTP
+      - "443:443"   # HTTPS
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - backend-network
+      - auth-network
+
   backend-database:
     image: postgres
     environment:
@@ -14,7 +36,6 @@ services:
     networks:
       - backend-network
 
-
   backend:
     build:
       context: .
@@ -22,8 +43,11 @@ services:
     depends_on:
       - auth
       - backend-database
-    ports:
-      - "2000:2000"
+    labels:
+      - "traefik.http.routers.backend.rule=Host(`backend.my-creative.my-vm.work`)"  # Replace with your domain
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=2000"
     environment:
       - POSTGRES_HOST=backend-database
       - POSTGRES_DB=postgres
@@ -52,8 +76,6 @@ services:
     networks:
       - auth-network
 
-
-
   auth:
     image: quay.io/keycloak/keycloak:25.0
     ports:
@@ -73,6 +95,11 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       PROXY_ADDRESS_FORWARDING: true
+    labels:
+      - "traefik.http.routers.auth.rule=Host(`auth.my-creative.my-vm.work`)"  # Replace with your domain
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls.certresolver=myresolver"
+      - "traefik.http.services.auth.loadbalancer.server.port=8080"
     restart: unless-stopped
     command:
       - start-dev
@@ -84,9 +111,6 @@ services:
       - backend-network
       - auth-network
 
-
-
-
 networks:
   auth-network:
   backend-network:
@@ -94,3 +118,4 @@ networks:
 volumes:
   userdata:
   businessdata:
+  letsencrypt:  # For SSL certificates storage
