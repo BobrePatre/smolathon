@@ -85,7 +85,7 @@ services:
       KC_PROXY: edge
       DB_DATABASE: smolaton
       DB_SCHEMA: public
-      KC_LOG_LEVEL: DEBUG
+#      KC_LOG_LEVEL: DEBUG
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://auth-database:5432/smolaton
       KC_DB_USERNAME: smolaton
