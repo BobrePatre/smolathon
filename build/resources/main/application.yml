@@ -1,0 +1,37 @@
+server:
+  port: 2000
+
+spring:
+  application:
+    name: kozodoy
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_HOST}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
+
+keycloak:
+  server-url: ${KEYCLOAK_HOST}
+  realm: ${KEYCLOAK_REALM}
+  clients:
+    core:
+      client-id: ${KEYCLOAK_CORE_CLIENT_ID}
+    manage:
+      client-id: ${KEYCLOAK_MANAGE_CLIENT_ID}
+      client-secret: ${KEYCLOAK_MANAGE_CLIENT_SECRET}
+
+
+

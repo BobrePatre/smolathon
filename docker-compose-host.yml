@@ -1,0 +1,96 @@
+version: "3.8"
+name: "smolaton"
+
+services:
+  backend-database:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: smolaton
+      POSTGRES_USER: smolaton
+    ports:
+      - "5432:5432"
+    volumes:
+      - businessdata:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-backend
+    depends_on:
+      - auth
+      - backend-database
+    ports:
+      - "2000:2000"
+    environment:
+      - POSTGRES_HOST=backend-database
+      - POSTGRES_DB=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_PASSWORD=smolaton
+      - POSTGRES_USER=smolaton
+      - KEYCLOAK_CORE_CLIENT_ID=smolaton-client
+      - KEYCLOAK_MANAGE_CLIENT_ID=manage-client
+      - KEYCLOAK_MANAGE_CLIENT_SECRET=smolaton
+      - KEYCLOAK_REALM=smolaton
+      - KEYCLOAK_HOST=http://auth:8080
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  auth-database:
+    image: postgres:latest
+    container_name: "auth-database"
+    volumes:
+      - userdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: smolaton
+      POSTGRES_USER: smolaton
+      POSTGRES_PASSWORD: smolaton
+    restart: unless-stopped
+    networks:
+      - auth-network
+
+
+
+  auth:
+    image: quay.io/keycloak/keycloak:25.0
+    ports:
+      - "8180:8080"
+      - "8443:8443"
+    environment:
+      KC_PROXY: edge
+      DB_DATABASE: smolaton
+      DB_SCHEMA: public
+      KC_LOG_LEVEL: DEBUG
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://auth-database:5432/smolaton
+      KC_DB_USERNAME: smolaton
+      KC_DB_PASSWORD: smolaton
+      KC_HTTP_ENABLED: 'true'
+      KC_HOSTNAME_STRICT: 'false'
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      PROXY_ADDRESS_FORWARDING: true
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import
+      - ./keycloak/providers:/opt/keycloak/providers
+    networks:
+      - backend-network
+      - auth-network
+
+
+
+
+networks:
+  auth-network:
+  backend-network:
+
+volumes:
+  userdata:
+  businessdata:

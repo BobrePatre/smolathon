@@ -1,0 +1,64 @@
+version: "3.8"
+name: "smolaton"
+
+services:
+  main-database:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+
+  auth-database:
+    image: postgres:latest
+    container_name: "auth-database"
+    volumes:
+      - userdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: kozodoy
+      POSTGRES_PASSWORD: dasfgkdfasgiuiirjoiiousdfig[opsdfg
+    restart: unless-stopped
+    networks:
+      - auth-network
+
+
+
+  auth:
+    image: quay.io/keycloak/keycloak:25.0
+    ports:
+      - "8180:8080"
+      - "8443:8443"
+    environment:
+      KC_PROXY: edge
+      DB_DATABASE: keycloak
+      DB_SCHEMA: public
+      KC_LOG_LEVEL: DEBUG
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://auth-database:5432/keycloak
+      KC_DB_USERNAME: kozodoy
+      KC_DB_PASSWORD: dasfgkdfasgiuiirjoiiousdfig[opsdfg
+      KC_HTTP_ENABLED: 'true'
+      KC_HOSTNAME_STRICT: 'false'
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      PROXY_ADDRESS_FORWARDING: true
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import
+      - ./keycloak/providers:/opt/keycloak/providers
+    networks:
+      - backend-network
+      - auth-network
+
+
+networks:
+  auth-network:
+  backend-network:
+
+volumes:
+  userdata:
