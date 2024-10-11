@@ -37,7 +37,10 @@ class PostUsecase(
     }
 
     @Transactional
-    fun getMyPosts(jwt: Jwt): List<PostRs> = postRepository.findAllByUserId(jwt.subject).map { it.toDto() }
+    fun getMyPosts(jwt: Jwt): List<PostRs> {
+        val profile: Profile = profileRepository.findByIdOrNull(jwt.subject) ?: throw NotFoundError("User not found")
+        return postRepository.findAllByUserId(jwt.subject).map { it.toDto(profile) }
+    }
 
     @Transactional
     fun likePost(jwt: Jwt, postId: String) {

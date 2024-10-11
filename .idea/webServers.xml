@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="c6b6c429-9354-486f-a48a-0d50ec9622a1" name="neyasot">
+        <fileTransfer accessType="SFTP" host="neyasot.my-vm.work" port="22" sshConfigId="3e340b5f-936f-4ecb-aa41-3c1b8a62e711" sshConfig="root@neyasot.my-vm.work:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

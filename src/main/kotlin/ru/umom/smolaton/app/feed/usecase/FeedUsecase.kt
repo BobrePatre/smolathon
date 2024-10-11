@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional
 import ru.umom.smolaton.app.posts.dto.PostRs
 import ru.umom.smolaton.app.posts.mappers.toDto
 import ru.umom.smolaton.app.posts.repository.PostRepository
+import ru.umom.smolaton.app.profile.dto.GetProfileInfoRs
 import ru.umom.smolaton.app.profile.repository.ProfileRepository
 import ru.umom.smolaton.shared.errors.common.NotFoundError
 
@@ -21,7 +22,8 @@ class FeedUsecase(
     @Transactional
     fun getFeedForUser(jwt: Jwt): MutableList<PostRs> {
         val user = profilesRepository.findByIdOrNull(jwt.subject) ?: throw NotFoundError("User not found")
-        val usersWithEquailInterests = profilesRepository.findUsersWithCommonInterests(interests = user.interests, profileId = jwt.subject)
+        val usersWithEquailInterests =
+            profilesRepository.findUsersWithCommonInterests(interests = user.interests, profileId = jwt.subject)
         val recomendetPosts: MutableList<PostRs> = mutableListOf()
         usersWithEquailInterests.forEach {
             it.posts.forEach { post ->
@@ -32,6 +34,14 @@ class FeedUsecase(
                         fileIds = post.fileIds,
                         likes = post.likes.map { like -> like.toDto() },
                         comments = post.comments.map { comment -> comment.toDto() },
+                        author = GetProfileInfoRs(
+                            name = it.name,
+                            userId = it.id,
+                            userInterests = it.interests,
+                            wantToFind = it.wantToFind,
+                            surname = it.surname,
+                            avatarId = it.avatarId,
+                        )
                     )
                 )
             }
