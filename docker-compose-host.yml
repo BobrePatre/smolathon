@@ -44,7 +44,7 @@ services:
       - auth
       - backend-database
     labels:
-      - "traefik.http.routers.backend.rule=Host(`backend.my-creative.my-vm.work`)"  # Replace with your domain
+      - "traefik.http.routers.backend.rule=Host(`backend.neyasot.my-vm.work`)"  # Replace with your domain
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=2000"
@@ -96,7 +96,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
       PROXY_ADDRESS_FORWARDING: true
     labels:
-      - "traefik.http.routers.auth.rule=Host(`auth.my-creative.my-vm.work`)"  # Replace with your domain
+      - "traefik.http.routers.auth.rule=Host(`auth.neyasot.my-vm.work`)"  # Replace with your domain
       - "traefik.http.routers.auth.service=auth"
       - "traefik.http.routers.auth.entrypoints=websecure"
       - "traefik.http.routers.auth.service=auth"
